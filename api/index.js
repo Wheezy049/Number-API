@@ -2,7 +2,6 @@ const express = require('express');
 const axios = require('axios');
 
 const app = express();
-const port = 3000;
 
 // Middleware to handle CORS
 app.use((req, res, next) => {
@@ -50,7 +49,7 @@ app.get('/api/classify-number', async (req, res) => {
         });
     }
 
-    // Get the fun fact about the number from Numbers API
+    // Get fun fact from Numbers API
     const url = `http://numbersapi.com/${number}?json`;
     let funFact = '';
 
@@ -71,7 +70,7 @@ app.get('/api/classify-number', async (req, res) => {
 
     const digitSum = getDigitSum(number);
 
-    // Return the JSON response
+    // Return response
     res.status(200).json({
         number: number,
         is_prime: isPrime(number),
@@ -82,10 +81,5 @@ app.get('/api/classify-number', async (req, res) => {
     });
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Number Classification API running at http://localhost:${port}`);
-});
-
-
+// Export the Express app as a serverless function
 module.exports = app;
