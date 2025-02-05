@@ -86,3 +86,6 @@ app.get('/api/classify-number', async (req, res) => {
 app.listen(port, () => {
     console.log(`Number Classification API running at http://localhost:${port}`);
 });
+
+
+module.exports = app;
