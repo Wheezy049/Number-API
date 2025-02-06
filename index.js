@@ -6,8 +6,14 @@ const app = express();
 // Middleware to handle CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Added OPTIONS method
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+    
+    // Handle OPTIONS pre-flight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     next();
 });
 
@@ -41,17 +47,24 @@ const getDigitSum = (num) => {
 // Number Classification Endpoint
 app.get('/api/classify-number', async (req, res) => {
     const number = req.query.number;
-    
+
     // Validate the number
-    if (!number || isNaN(number)) {
+    if (!number) {
         return res.status(400).json({
             error: true,
-            message: 'Invalid input: Please provide a valid number.'
+            message: 'Missing parameter: Please provide a valid number.'
+        });
+    }
+
+    if (isNaN(number) || isNaN(parseInt(number))) {
+        return res.status(400).json({
+            error: true,
+            message: 'Invalid input: Please provide a valid numeric value.'
         });
     }
 
     const parsedNumber = parseInt(number);
-    
+
     if (parsedNumber <= 0) {
         return res.status(400).json({
             error: true,
@@ -106,7 +119,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
 
 // Export the Express app as a serverless function
 module.exports = app;
