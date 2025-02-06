@@ -14,6 +14,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// Default route (fix for "Cannot GET /")
+app.get('/', (req, res) => {
+    res.send('Welcome to the Number Classification API! Use /api/classify-number?number=YOUR_NUMBER');
+});
+
 // Function to check if a number is prime
 const isPrime = (num) => {
     if (num < 2) return false;
@@ -35,10 +40,13 @@ const isPerfect = (num) => {
 
 // Function to check if a number is an Armstrong number
 const isArmstrong = (num) => {
-    const digits = num.toString().split('');
-    const power = digits.length;
-    const sum = digits.reduce((acc, digit) => acc + Math.pow(parseInt(digit), power), 0);
-    return sum === num;
+    let sum = 0, temp = Math.abs(num), digits = temp.toString().length;
+    while (temp > 0) {
+        let digit = temp % 10;
+        sum += Math.pow(digit, digits);
+        temp = Math.floor(temp / 10);
+    }
+    return sum === Math.abs(num);
 };
 
 // Function to calculate the sum of digits
@@ -47,6 +55,16 @@ const digitSum = (num) => {
         .toString()
         .split('')
         .reduce((acc, digit) => acc + parseInt(digit), 0);
+};
+
+// Function to generate fun fact
+const getFunFact = (num, properties) => {
+    if (properties.includes('prime')) return `${num} is a prime number, meaning it has only two factors: 1 and itself!`;
+    if (properties.includes('perfect')) return `${num} is a perfect number, which means its divisors sum up to the number itself!`;
+    if (properties.includes('armstrong')) return `${num} is an Armstrong number, where the sum of its digits raised to their power equals the number!`;
+    if (properties.includes('even')) return `${num} is even, which means it’s divisible by 2!`;
+    if (properties.includes('odd')) return `${num} is odd, meaning it’s not evenly divisible by 2!`;
+    return `Every number has something special, and ${num} is no different!`;
 };
 
 // API endpoint for classifying numbers
@@ -58,7 +76,7 @@ app.get('/api/classify-number', (req, res) => {
     }
 
     const parsedNumber = parseFloat(number);
-    
+
     if (isNaN(parsedNumber)) {
         return res.status(400).json({ error: true, number });
     }
@@ -77,16 +95,20 @@ app.get('/api/classify-number', (req, res) => {
     if (isArmstrong(parsedNumber)) properties.push('armstrong');
     if (parsedNumber % 2 === 0) properties.push('even');
     else properties.push('odd');
-    if (isPrime(parsedNumber)) properties.push('prime');
-    if (isPerfect(parsedNumber)) properties.push('perfect');
+    if (parsedNumber > 0 && isPrime(parsedNumber)) properties.push('prime');
+    if (parsedNumber > 0 && isPerfect(parsedNumber)) properties.push('perfect');
+
+    // Generate fun fact
+    const funFact = getFunFact(parsedNumber, properties);
 
     res.json({
         number: parsedNumber,
         classification,
-        is_prime: isPrime(parsedNumber),
-        is_perfect: isPerfect(parsedNumber),
+        is_prime: parsedNumber > 0 ? isPrime(parsedNumber) : false,
+        is_perfect: parsedNumber > 0 ? isPerfect(parsedNumber) : false,
         properties,
         digit_sum: digitSum(parsedNumber),
+        fun_fact: funFact, // Added Fun Fact
     });
 });
 
