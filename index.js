@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 
 // Middleware to handle CORS
@@ -57,18 +58,19 @@ const digitSum = (num) => {
         .reduce((acc, digit) => acc + parseInt(digit), 0);
 };
 
-// Function to generate fun fact
-const getFunFact = (num, properties) => {
-    if (properties.includes('prime')) return `${num} is a prime number, meaning it has only two factors: 1 and itself!`;
-    if (properties.includes('perfect')) return `${num} is a perfect number, which means its divisors sum up to the number itself!`;
-    if (properties.includes('armstrong')) return `${num} is an Armstrong number, where the sum of its digits raised to their power equals the number!`;
-    if (properties.includes('even')) return `${num} is even, which means it’s divisible by 2!`;
-    if (properties.includes('odd')) return `${num} is odd, meaning it’s not evenly divisible by 2!`;
-    return `Every number has something special, and ${num} is no different!`;
+// Function to fetch a dynamic fun fact from an API
+const getFunFactFromAPI = async (num) => {
+    try {
+        const response = await axios.get(`https://api.funfact.com/getFact?number=${num}`);
+        return response.data.fact; 
+    } catch (error) {
+        console.error("Error fetching fun fact: ", error);
+        return `Every number has something special, and ${num} is no different!`;
+    }
 };
 
 // API endpoint for classifying numbers
-app.get('/api/classify-number', (req, res) => {
+app.get('/api/classify-number', async (req, res) => {
     const { number } = req.query;
 
     if (!number) {
@@ -113,8 +115,8 @@ app.get('/api/classify-number', (req, res) => {
         properties = ['odd']; // Exclude 'prime' from the properties
     }
 
-    // Generate fun fact
-    const funFact = getFunFact(parsedNumber, properties);
+    // Fetch the fun fact from an API
+    const funFact = await getFunFactFromAPI(parsedNumber);
 
     res.json({
         number: parsedNumber,
@@ -123,7 +125,7 @@ app.get('/api/classify-number', (req, res) => {
         is_perfect: parsedNumber > 0 ? isPerfect(parsedNumber) : false,
         properties,
         digit_sum: digitSum(parsedNumber),
-        fun_fact: funFact, // Added Fun Fact
+        fun_fact: funFact,
     });
 });
 
