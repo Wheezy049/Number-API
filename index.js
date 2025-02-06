@@ -40,46 +40,73 @@ const getDigitSum = (num) => {
 
 // Number Classification Endpoint
 app.get('/api/classify-number', async (req, res) => {
-    const number = parseInt(req.query.number);
+    const number = req.query.number;
     
-    if (isNaN(number)) {
+    // Validate the number
+    if (!number || isNaN(number)) {
         return res.status(400).json({
-            number: req.query.number,
-            error: true
+            error: true,
+            message: 'Invalid input: Please provide a valid number.'
+        });
+    }
+
+    const parsedNumber = parseInt(number);
+    
+    if (parsedNumber <= 0) {
+        return res.status(400).json({
+            error: true,
+            message: 'Invalid input: Number must be a positive integer.'
         });
     }
 
     // Get fun fact from Numbers API
-    const url = `http://numbersapi.com/${number}?json`;
+    const url = `http://numbersapi.com/${parsedNumber}?json`;
     let funFact = '';
 
     try {
         const response = await axios.get(url);
         funFact = response.data.text;
     } catch (error) {
+        console.error('Error fetching fun fact:', error);
         funFact = 'No fun fact available';
     }
 
     // Classify number properties
     const properties = [];
-    if (isArmstrong(number)) properties.push('armstrong');
-    if (isPrime(number)) properties.push('prime');
-    if (isPerfect(number)) properties.push('perfect');
-    if (number % 2 === 0) properties.push('even');
+    if (isArmstrong(parsedNumber)) properties.push('armstrong');
+    if (isPrime(parsedNumber)) properties.push('prime');
+    if (isPerfect(parsedNumber)) properties.push('perfect');
+    if (parsedNumber % 2 === 0) properties.push('even');
     else properties.push('odd');
 
-    const digitSum = getDigitSum(number);
+    const digitSum = getDigitSum(parsedNumber);
 
     // Return response
     res.status(200).json({
-        number: number,
-        is_prime: isPrime(number),
-        is_perfect: isPerfect(number),
+        number: parsedNumber,
+        is_prime: isPrime(parsedNumber),
+        is_perfect: isPerfect(parsedNumber),
         properties: properties,
         digit_sum: digitSum,
         fun_fact: funFact
     });
 });
+
+// Default Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        error: true,
+        message: 'Internal Server Error'
+    });
+});
+
+// Add this at the end of the file to make the app listen on a port
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+
 
 // Export the Express app as a serverless function
 module.exports = app;
