@@ -1,124 +1,56 @@
-const express = require('express');
-const axios = require('axios');
+// index.js or api/classify-number.js (depending on your setup)
 
+// Required packages
+const express = require('express');
 const app = express();
 
 // Middleware to handle CORS
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Added OPTIONS method
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // Handle OPTIONS pre-flight requests
+    // Set CORS headers for all incoming requests
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins, or replace * with your front-end URL
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Handle OPTIONS requests (preflight)
     if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+        return res.status(200).json({});
     }
 
     next();
 });
 
-// Helper functions
-const isPrime = (num) => {
-    if (num <= 1) return false;
-    for (let i = 2; i <= Math.sqrt(num); i++) {
-        if (num % i === 0) return false;
-    }
-    return true;
-};
+// API logic for classifying numbers
+app.get('/api/classify-number', (req, res) => {
+    const { number } = req.query;
 
-const isPerfect = (num) => {
-    let sum = 0;
-    for (let i = 1; i < num; i++) {
-        if (num % i === 0) sum += i;
-    }
-    return sum === num;
-};
-
-const isArmstrong = (num) => {
-    const digits = num.toString().split('');
-    const sum = digits.reduce((acc, digit) => acc + Math.pow(parseInt(digit), digits.length), 0);
-    return sum === num;
-};
-
-const getDigitSum = (num) => {
-    return num.toString().split('').reduce((acc, digit) => acc + parseInt(digit), 0);
-};
-
-// Number Classification Endpoint
-app.get('/api/classify-number', async (req, res) => {
-    const number = req.query.number;
-
-    // Validate the number
     if (!number) {
-        return res.status(400).json({
-            error: true,
-            message: 'Missing parameter: Please provide a valid number.'
-        });
+        return res.status(400).json({ error: 'Number parameter is missing' });
     }
 
-    if (isNaN(number) || isNaN(parseInt(number))) {
-        return res.status(400).json({
-            error: true,
-            message: 'Invalid input: Please provide a valid numeric value.'
-        });
+    const parsedNumber = parseFloat(number);
+    
+    if (isNaN(parsedNumber)) {
+        return res.status(400).json({ error: 'Invalid input - non-numeric value' });
     }
 
-    const parsedNumber = parseInt(number);
-
-    if (parsedNumber <= 0) {
-        return res.status(400).json({
-            error: true,
-            message: 'Invalid input: Number must be a positive integer.'
-        });
+    // Check if the number is positive, negative, or zero
+    let classification = 'unknown';
+    if (parsedNumber > 0) {
+        classification = 'positive';
+    } else if (parsedNumber < 0) {
+        classification = 'negative';
+    } else {
+        classification = 'zero';
     }
 
-    // Get fun fact from Numbers API
-    const url = `http://numbersapi.com/${parsedNumber}?json`;
-    let funFact = '';
-
-    try {
-        const response = await axios.get(url);
-        funFact = response.data.text;
-    } catch (error) {
-        console.error('Error fetching fun fact:', error);
-        funFact = 'No fun fact available';
-    }
-
-    // Classify number properties
-    const properties = [];
-    if (isArmstrong(parsedNumber)) properties.push('armstrong');
-    if (isPrime(parsedNumber)) properties.push('prime');
-    if (isPerfect(parsedNumber)) properties.push('perfect');
-    if (parsedNumber % 2 === 0) properties.push('even');
-    else properties.push('odd');
-
-    const digitSum = getDigitSum(parsedNumber);
-
-    // Return response
-    res.status(200).json({
-        number: parsedNumber,
-        is_prime: isPrime(parsedNumber),
-        is_perfect: isPerfect(parsedNumber),
-        properties: properties,
-        digit_sum: digitSum,
-        fun_fact: funFact
-    });
+    // Return classification result
+    res.json({ number: parsedNumber, classification });
 });
 
-// Default Error Handling Middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        error: true,
-        message: 'Internal Server Error'
-    });
-});
-
-// Add this at the end of the file to make the app listen on a port
+// Start the server (this would be used for local testing)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
-// Export the Express app as a serverless function
 module.exports = app;
