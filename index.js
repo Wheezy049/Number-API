@@ -58,14 +58,14 @@ const digitSum = (num) => {
         .reduce((acc, digit) => acc + parseInt(digit), 0);
 };
 
-// Function to fetch a dynamic fun fact from an API
+// Function to fetch a dynamic fun fact from NumbersAPI
 const getFunFactFromAPI = async (num) => {
     try {
-        const response = await axios.get(`https://api.funfact.com/getFact?number=${num}`);
-        return response.data.fact; 
+        const response = await axios.get(`http://numbersapi.com/${num}?json`);
+        return response.data.text; // NumbersAPI response contains the fun fact as 'text'
     } catch (error) {
         console.error("Error fetching fun fact: ", error);
-        return `Every number has something special, and ${num} is no different!`;
+        return `Every number has something special, and ${num} is no different!`; // Fallback if the API fails
     }
 };
 
@@ -115,9 +115,10 @@ app.get('/api/classify-number', async (req, res) => {
         properties = ['odd']; // Exclude 'prime' from the properties
     }
 
-    // Fetch the fun fact from an API
+    // Fetch the fun fact from NumbersAPI
     const funFact = await getFunFactFromAPI(parsedNumber);
 
+    // Send the response with all the data, including the fun fact
     res.json({
         number: parsedNumber,
         classification,
@@ -125,7 +126,7 @@ app.get('/api/classify-number', async (req, res) => {
         is_perfect: parsedNumber > 0 ? isPerfect(parsedNumber) : false,
         properties,
         digit_sum: digitSum(parsedNumber),
-        fun_fact: funFact,
+        fun_fact: funFact, // Dynamically fetched fun fact
     });
 });
 
