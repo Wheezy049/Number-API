@@ -83,15 +83,6 @@ app.get('/api/classify-number', async (req, res) => {
         return res.status(400).json({ error: true, number });
     }
 
-    let classification = 'unknown';
-    if (parsedNumber > 0) {
-        classification = 'positive';
-    } else if (parsedNumber < 0) {
-        classification = 'negative';
-    } else {
-        classification = 'zero';
-    }
-
     // Determine number properties
     let properties = [];
     if (isArmstrong(parsedNumber)) properties.push('armstrong');
@@ -121,9 +112,6 @@ app.get('/api/classify-number', async (req, res) => {
     // Send the response with all the data, including the fun fact
     res.json({
         number: parsedNumber,
-        classification,
-        is_prime: parsedNumber > 0 ? isPrime(parsedNumber) : false,
-        is_perfect: parsedNumber > 0 ? isPerfect(parsedNumber) : false,
         properties,
         digit_sum: digitSum(parsedNumber),
         fun_fact: funFact, // Dynamically fetched fun fact
