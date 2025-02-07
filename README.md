@@ -10,12 +10,12 @@ This API accepts a number and returns its mathematical properties along with a f
 ## Technology Stack
 - **Language**: JavaScript (Node.js)
 - **Framework**: Express.js
-- **Hosting**: Vercel
+- **Hosting**: Render
 
 ## Deployment
 This API is deployed and publicly accessible at:
 
-🔗 **Live URL:** [https://number-classification-api-silk.vercel.app/](https://number-classification-api-silk.vercel.app/)
+🔗 **Live URL:** [https://number-api-zxvm.onrender.com/](https://number-api-zxvm.onrender.com/)
 
 To test the API, simply send a `GET` request to the URL.
 
@@ -30,13 +30,13 @@ You can test the API using:
 ### **Browser**
 Open the URL in your browser:
 
-https://number-classification-api-silk.vercel.app/api/classify-number?number=371
+https://number-api-zxvm.onrender.com/api/classify-number?number=371
 
 
 ### **cURL**
 Run the following command in your terminal:
 ```bash
-curl -X GET "https://number-classification-api-silk.vercel.app/api/classify-number?number=371"
+curl -X GET "https://number-api-zxvm.onrender.com/api/classify-number?number=371"
 
 
 ### Example Request:
